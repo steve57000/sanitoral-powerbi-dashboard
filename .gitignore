@@ -1,1 +1,34 @@
-/.idea/
+# Power BI temporary files
+*.tmp
+*.pbi
+*.bak
+
+# Power BI cache / local artifacts
+*.DataMashup
+*.AnalysisServicesWorkspace
+
+# Office temporary files
+~$*
+*.~*
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+.vscode/
+
+# Python / analysis cache
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Local environment
+.env
+.env.*
+
+# Optional heavy exports
+*.zip
+

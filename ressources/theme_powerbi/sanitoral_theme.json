@@ -1,0 +1,17 @@
+{
+  "name": "Sanitoral Professional",
+  "dataColors": [
+    "#2F5D62",
+    "#5E8B7E",
+    "#A7C4BC",
+    "#DFEEEA",
+    "#F2C94C",
+    "#F2994A",
+    "#EB5757",
+    "#2D9CDB"
+  ],
+  "background": "#FFFFFF",
+  "foreground": "#1F2933",
+  "tableAccent": "#2F5D62"
+}
+
