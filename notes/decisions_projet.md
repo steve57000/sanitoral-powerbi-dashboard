@@ -56,13 +56,16 @@ Raison :
 
 Decision :
 
-- construire un rapport multi-pages, mais utilisable par tous les roles grace aux filtres et interactions.
+- construire un rapport final en 2 pages principales : `Vue executive` et `Detail des alertes` ;
+- rendre ces pages utilisables par tous les roles grace aux filtres et interactions.
 
 Raison :
 
 - le scenario demande un rapport accessible aux trois types de directeurs ;
-- il ne faut pas creer une page totalement separee par role si les filtres permettent une lecture adaptee.
-
+- il ne faut pas creer une page totalement separee par role si les filtres permettent une lecture adaptee ;
+- la premiere page donne une vision de pilotage globale ;
+- la seconde page permet d'analyser les phases en alerte ;
+- cette structure evite la dispersion et facilite la soutenance.
 
 ## Modele final Power BI
 
@@ -75,18 +78,6 @@ Raison :
 - les jointures sont deja integrees dans Power Query ;
 - le modele est plus simple a controler et a expliquer ;
 - les mesures DAX restent directes et lisibles.
-
-## Rapport final en 2 pages
-
-Decision :
-
-- limiter le rapport final a 2 pages principales : `Vue executive` et `Detail des alertes`.
-
-Raison :
-
-- la premiere page donne une vision de pilotage globale ;
-- la seconde page permet d'analyser les phases en alerte ;
-- cette structure evite la dispersion et facilite la soutenance.
 
 ## Filtres plutot qu'une page par role
 
