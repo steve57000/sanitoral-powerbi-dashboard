@@ -24,3 +24,16 @@ Prochaine etape :
 
 - completer le Product Strategy Canvas avant de construire le rapport Power BI.
 
+
+## 2026-07-07 - Finalisation du dashboard Power BI
+
+Actions realisees :
+
+- nettoyage des 7 feuilles Excel sources ;
+- creation de la cle `ProjectPhaseKey` ;
+- construction de la table finale `Fact_ProjectPhasePerformance` ;
+- desactivation du chargement des tables intermediaires dans le modele final ;
+- creation des mesures DAX principales et des mesures d'alerte robustes ;
+- creation des pages `Vue executive` et `Detail des alertes` ;
+- amelioration du design avec cartes KPI, graphiques, filtres et tableau detaille ;
+- validation des controles globaux : 104 projets, 520 phases, 348 phases en alerte, 66,92 % de phases en alerte, 214 alertes cout, 159 alertes duree et 96 alertes livrables.

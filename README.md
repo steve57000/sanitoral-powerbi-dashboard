@@ -2,16 +2,60 @@
 
 Projet de data visualisation realise dans le cadre du parcours Data Analyst.
 
-L'objectif est de construire un tableau de bord Power BI dynamique permettant a Sanitoral de suivre l'avancement de ses projets IT et Marketing, d'identifier les ecarts de performance, et d'aider les directeurs a prioriser les actions correctives.
+L'objectif est de fournir a Sanitoral un tableau de bord Power BI finalise permettant de suivre l'avancement des projets IT et Marketing, d'identifier les ecarts de performance et de prioriser les actions correctives.
 
-## Objectifs du projet
+## Etat final du projet
 
-- Suivre la performance globale du portefeuille de projets.
-- Identifier les projets, pays, regions et phases en alerte.
-- Comparer les couts, delais et livrables prevus avec les resultats reels.
-- Alerter les directeurs lorsqu'un ecart depasse 15 %.
-- Proposer un axe strategique issu de l'analyse.
-- Documenter le modele de donnees et la procedure de mise a jour hebdomadaire.
+Le dashboard Power BI est construit autour d'une table finale chargee dans le modele : `Fact_ProjectPhasePerformance`.
+
+Les tables sources nettoyees dans Power Query servent a construire cette table finale, mais leur chargement est desactive dans le modele Power BI afin de conserver un modele simple, lisible et facile a presenter.
+
+## Pages finales du rapport Power BI
+
+Le rapport final contient 2 pages principales :
+
+1. **Vue executive**
+   - KPI : Nb Projets, Nb Phases, Nb Phases en alerte, Taux phases en alerte, Cout reel, Ecart cout %.
+   - Filtres : `Project_Type`, `Country`, `Region`, `Alert_Status`, `Phase`.
+   - Graphiques : phases en alerte par region, phases en alerte par type de projet, repartition des alertes par nature.
+2. **Detail des alertes**
+   - Tableau filtre sur `Alert_Status = En alerte`.
+   - Colonnes : `Project_ID`, `Phase`, `Country`, `Region`, `Project_Type`, `Alert_Count`, `Alert_Status`, Ecart cout %.
+   - Tri decroissant sur `Alert_Count` et mise en forme conditionnelle sur `Alert_Count`.
+
+## KPI de controle globaux
+
+Valeurs attendues sans filtre actif :
+
+| Indicateur | Valeur attendue |
+|---|---:|
+| Nb Projets | 104 |
+| Nb Phases | 520 |
+| Nb Phases en alerte | 348 |
+| Taux phases en alerte | 66,92 % |
+| Nb alertes cout | 214 |
+| Nb alertes duree | 159 |
+| Nb alertes livrables | 96 |
+
+## Regle d'alerte
+
+Sanitoral considere qu'un ecart de 15 % entre le prevu et le reel doit conduire a une alerte.
+
+Les indicateurs surveilles sont :
+
+- les couts des projets ;
+- le respect des delais ;
+- les livrables produits par rapport au planning.
+
+## Livrables principaux
+
+- `livrables/01_product_strategy_canvas/Product_Strategy_Canvas_Sanitoral_Bell_Steve.docx`
+- `livrables/02_powerbi/Sanitoral_PowerBI_Dashboard_Bell_Steve.pbix`
+- `livrables/03_documentation/`
+- `livrables/04_exports/`
+- `livrables/05_soutenance/`
+
+Le fichier `.pbix`, les captures et les exports PDF sont ajoutes manuellement par l'utilisateur.
 
 ## Structure du repository
 
@@ -23,7 +67,7 @@ mission/
 
 livrables/
   01_product_strategy_canvas/ Product Strategy Canvas final
-  02_powerbi/                 Fichiers Power BI .pbix et .pbit
+  02_powerbi/                 Fichier Power BI final ajoute manuellement
   03_documentation/           Documentation du modele, DAX et Power Query
   04_exports/                 Exports PDF et captures du dashboard
   05_soutenance/              Script oral et questions probables
@@ -46,36 +90,3 @@ notes/
 - Excel
 - Git / GitHub
 - Markdown
-
-## Regle d'alerte
-
-Sanitoral considere qu'un ecart de 15 % entre le prevu et le reel doit conduire a une alerte.
-
-Les indicateurs surveilles sont :
-
-- les couts des projets ;
-- le respect des delais ;
-- les livrables produits par rapport au planning.
-
-## Pages prevues du rapport Power BI
-
-1. Vue executive
-2. Performance par projet
-3. Analyse geographique
-4. Diagnostic par phase
-5. Documentation et procedure de mise a jour
-
-## Etat d'avancement
-
-| Etape | Statut |
-|---|---|
-| Structuration du repository | En cours |
-| Audit de demarrage | Realise |
-| Product Strategy Canvas | A faire |
-| Preparation Power Query | A faire |
-| Modele de donnees | A faire |
-| Mesures DAX | A faire |
-| Dashboard Power BI | A faire |
-| Documentation finale | A faire |
-| Soutenance | A faire |
-

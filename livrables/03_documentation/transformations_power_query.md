@@ -1,126 +1,115 @@
 # Transformations Power Query
 
-Ce document liste les transformations a appliquer dans Power Query Editor pour rendre le nettoyage automatique et reproductible.
+Ce document decrit les transformations appliquees dans Power Query pour construire le modele final du dashboard Power BI Sanitoral.
 
 ## Objectif
 
-Preparer les donnees Sanitoral sans modifier manuellement le fichier Excel source.
+Preparer les donnees Sanitoral sans modifier manuellement le fichier Excel source, puis produire une table finale unique chargee dans le modele Power BI : `Fact_ProjectPhasePerformance`.
 
-Le fichier source contient plusieurs feuilles avec :
+Les tables sources nettoyees restent utilisees dans Power Query pour les jointures et les calculs, mais leur chargement est desactive dans le modele final.
 
-- des lignes descriptives avant les vrais en-tetes ;
-- des noms de colonnes incoherents selon les tables ;
-- des types de donnees a corriger ;
-- des tables a relier au niveau projet-phase.
+## Feuilles sources documentees
 
-## Feuilles a importer
-
-| Feuille source | Role |
+| Feuille source | Role dans la preparation |
 |---|---|
-| `Projects_plans` | Previsions par projet et phase |
-| `Project type` | Type de projet |
-| `Actual_Costs` | Couts reels |
-| `Actual_Duration` | Durees reelles |
-| `Actual_Delivrable` | Livrables reels |
-| `Projects_Locations` | Pays des projets |
-| `Country_Profiles` | Region et type de pays |
+| `Projects_plans` | Donnees prevues par projet et phase : dates, durees, couts et livrables planifies. |
+| `Project type` | Enrichissement de chaque projet avec son type : IT ou Marketing. |
+| `Actual_Costs` | Couts reels observes par projet et phase. |
+| `Actual_Duration` | Durees reelles observees par projet et phase. |
+| `Actual_Delivrable` | Livrables reels observes par projet et phase. |
+| `Projects_Locations` | Association entre les projets et les pays. |
+| `Country_Profiles` | Enrichissement pays avec region et type d'entite. |
 
-## Etapes communes
+## Etapes communes de nettoyage
 
-Pour chaque table :
+Pour chaque feuille :
 
-1. Importer la feuille depuis Excel.
-2. Supprimer les lignes vides ou descriptives avant l'en-tete.
+1. Importer la feuille Excel dans Power Query.
+2. Supprimer les lignes descriptives ou vides avant les vrais en-tetes.
 3. Promouvoir la premiere ligne utile comme en-tete.
 4. Supprimer les lignes entierement vides.
-5. Renommer les colonnes.
+5. Renommer les colonnes avec une convention stable.
 6. Corriger les types de donnees.
-7. Supprimer les espaces inutiles dans les textes.
+7. Nettoyer les espaces inutiles dans les champs texte.
+8. Controler les doublons et les valeurs manquantes avant jointure.
 
-## Renommage recommande
+## Creation de la cle ProjectPhaseKey
 
-| Colonne source | Colonne cible |
-|---|---|
-| `Project ID` | `Project_ID` |
-| `Proj_ID` | `Project_ID` |
-| `Project` | `Project_ID` |
-| `ID` | `Project_ID` |
-| `Project Type` | `Project_Type` |
-| `Planned_Delivrable` | `Planned_Deliverables` |
-| `Actual_Deliverables` | `Actual_Deliverables` |
-
-## Types de donnees
-
-| Colonne | Type Power BI |
-|---|---|
-| `Project_ID` | Nombre entier |
-| `Project_Type` | Texte |
-| `Country` | Texte |
-| `Region` | Texte |
-| `Type` | Texte |
-| `Phase` | Texte |
-| `Start Date` | Date |
-| `Planned_Duration` | Nombre entier |
-| `Actual_Duration` | Nombre entier |
-| `Planned_Cost` | Nombre decimal ou entier |
-| `Actual_Cost` | Nombre decimal ou entier |
-| `Planned_Deliverables` | Nombre entier |
-| `Actual_Deliverables` | Nombre entier |
-
-## Cle unique projet-phase
-
-Creer une colonne personnalisee dans les tables de phases :
+Une cle projet-phase est creee dans les tables au grain projet + phase afin de garantir des jointures fiables.
 
 ```powerquery
 Text.From([Project_ID]) & "|" & [Phase]
 ```
 
-Nom recommande :
+Nom de la colonne : `ProjectPhaseKey`.
 
-```text
-ProjectPhaseKey
-```
+Cette cle est necessaire car `Project_ID` seul n'est pas unique au niveau phase, et `Phase` seule n'identifie pas un projet.
 
-## Colonnes d'ecart recommandees
+## Construction de Fact_ProjectPhasePerformance
 
-Les colonnes peuvent etre creees dans Power Query ou en DAX. Pour les alertes ligne par ligne, Power Query est pratique.
+La table finale `Fact_ProjectPhasePerformance` est construite a partir de `Projects_plans`, enrichie par jointures avec :
 
-```text
-Cost_Variance = Actual_Cost - Planned_Cost
-Duration_Variance = Actual_Duration - Planned_Duration
-Deliverables_Variance = Actual_Deliverables - Planned_Deliverables
-```
+- `Actual_Costs` via `ProjectPhaseKey` ;
+- `Actual_Duration` via `ProjectPhaseKey` ;
+- `Actual_Delivrable` via `ProjectPhaseKey` ;
+- `Project type` via `Project_ID` ;
+- `Projects_Locations` via `Project_ID` ;
+- `Country_Profiles` via `Country`.
 
-```text
-Cost_Variance_Pct = Cost_Variance / Planned_Cost
-Duration_Variance_Pct = Duration_Variance / Planned_Duration
-Deliverables_Variance_Pct = Deliverables_Variance / Planned_Deliverables
-```
+Des colonnes de performance et d'alerte sont ensuite ajoutees pour comparer le prevu et le reel.
 
-## Colonnes d'alerte
+## Colonnes finales
 
-Regle Sanitoral :
+La table finale chargee contient les colonnes suivantes :
 
-- alerte cout si le cout reel depasse le cout prevu de plus de 15 % ;
-- alerte duree si la duree reelle depasse la duree prevue de plus de 15 % ;
-- alerte livrables si les livrables reels sont inferieurs au prevu de plus de 15 %.
+| Colonne | Description |
+|---|---|
+| `Project_ID` | Identifiant du projet. |
+| `Phase` | Phase du projet. |
+| `Start_Date` | Date de debut de la phase. |
+| `Planned_Duration` | Duree prevue. |
+| `Planned_Cost` | Cout prevu. |
+| `Planned_Deliverables` | Nombre de livrables prevus. |
+| `ProjectPhaseKey` | Cle unique projet-phase. |
+| `Actual_Cost` | Cout reel. |
+| `Actual_Duration` | Duree reelle. |
+| `Actual_Deliverables` | Nombre de livrables reels. |
+| `Project_Type` | Type de projet. |
+| `Country` | Pays du projet. |
+| `Region` | Region du pays. |
+| `Entity_Type` | Type d'entite locale. |
+| `Cost_Difference_Pct` | Ecart de cout en pourcentage. |
+| `Cost_Alert` | Indicateur d'alerte cout. |
+| `Duration_Alert` | Indicateur d'alerte duree. |
+| `Deliverables_Alert` | Indicateur d'alerte livrables. |
+| `Any_Alert` | Indicateur global d'alerte. |
+| `Alert_Count` | Nombre d'alertes sur la ligne. |
+| `Alert_Status` | Statut lisible : en alerte ou sans alerte. |
 
-```text
-Alert_Cost = Cost_Variance_Pct > 0.15
-Alert_Duration = Duration_Variance_Pct > 0.15
-Alert_Deliverables = Deliverables_Variance_Pct < -0.15
-Any_Alert = Alert_Cost or Alert_Duration or Alert_Deliverables
-```
+## Chargement dans le modele
+
+Seule la table `Fact_ProjectPhasePerformance` est chargee dans le modele Power BI final.
+
+Les tables intermediaires issues des 7 feuilles sources sont conservees dans Power Query pour documenter et automatiser la preparation, mais l'option de chargement est desactivee pour eviter de surcharger le modele.
 
 ## Controles qualite
 
-A verifier apres nettoyage :
+Valeurs attendues sans filtre actif :
 
-- nombre de projets : 104 ;
-- nombre de phases : 520 ;
+| Controle | Valeur attendue |
+|---|---:|
+| Nombre de projets | 104 |
+| Nombre de phases | 520 |
+| Phases en alerte | 348 |
+| Alertes cout | 214 |
+| Alertes duree | 159 |
+| Alertes livrables | 96 |
+
+Autres controles :
+
 - absence de doublon sur `ProjectPhaseKey` ;
 - absence de valeur manquante apres jointure ;
 - correspondance complete entre projets, types, pays et regions ;
 - types numeriques correctement reconnus ;
-- dates correctement reconnues.
-
+- dates correctement reconnues ;
+- colonnes d'alerte exploitables par les mesures DAX robustes.

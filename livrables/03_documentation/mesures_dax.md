@@ -2,13 +2,11 @@
 
 Ce document centralise les mesures DAX du rapport Power BI Sanitoral.
 
-Le nom de table utilise ci-dessous est :
+Table utilisee :
 
 ```text
 Fact_ProjectPhasePerformance
 ```
-
-Il pourra etre adapte selon le nom final dans Power BI.
 
 ## Volumetrie
 
@@ -20,11 +18,6 @@ DISTINCTCOUNT(Fact_ProjectPhasePerformance[Project_ID])
 ```DAX
 Nb Phases =
 COUNTROWS(Fact_ProjectPhasePerformance)
-```
-
-```DAX
-Nb Pays =
-DISTINCTCOUNT(Fact_ProjectPhasePerformance[Country])
 ```
 
 ## Couts
@@ -95,66 +88,98 @@ DIVIDE([Ecart Livrables], [Livrables Prevus])
 
 ## Alertes
 
-Si les colonnes d'alerte sont creees en Power Query sous forme 0/1 :
+Les mesures d'alerte utilisent `VALUE()` et `IFERROR()` afin de rester robustes si les colonnes d'alerte sont importees ou conservees en texte dans Power BI.
 
 ```DAX
-Nb Alertes Cout =
-SUM(Fact_ProjectPhasePerformance[Alert_Cost])
-```
-
-```DAX
-Nb Alertes Duree =
-SUM(Fact_ProjectPhasePerformance[Alert_Duration])
-```
-
-```DAX
-Nb Alertes Livrables =
-SUM(Fact_ProjectPhasePerformance[Alert_Deliverables])
-```
-
-```DAX
-Nb Phases en Alerte =
-SUM(Fact_ProjectPhasePerformance[Any_Alert])
-```
-
-```DAX
-Taux Phases en Alerte =
-DIVIDE([Nb Phases en Alerte], [Nb Phases])
-```
-
-## Projets en alerte
-
-```DAX
-Nb Projets en Alerte =
-CALCULATE(
-    DISTINCTCOUNT(Fact_ProjectPhasePerformance[Project_ID]),
-    Fact_ProjectPhasePerformance[Any_Alert] = 1
+Nb alertes cout =
+COUNTROWS(
+    FILTER(
+        Fact_ProjectPhasePerformance,
+        IFERROR(VALUE(Fact_ProjectPhasePerformance[Cost_Alert]), 0) = 1
+    )
 )
 ```
 
 ```DAX
-Taux Projets en Alerte =
-DIVIDE([Nb Projets en Alerte], [Nb Projets])
-```
-
-## Mesures de lecture strategique
-
-```DAX
-Score Risque =
-[Nb Alertes Cout] + [Nb Alertes Duree] + [Nb Alertes Livrables]
+Nb alertes duree =
+COUNTROWS(
+    FILTER(
+        Fact_ProjectPhasePerformance,
+        IFERROR(VALUE(Fact_ProjectPhasePerformance[Duration_Alert]), 0) = 1
+    )
+)
 ```
 
 ```DAX
-Ecart Global Normalise =
-ABS([Ecart Cout %]) + ABS([Ecart Duree %]) + ABS([Ecart Livrables %])
+Nb alertes livrables =
+COUNTROWS(
+    FILTER(
+        Fact_ProjectPhasePerformance,
+        IFERROR(VALUE(Fact_ProjectPhasePerformance[Deliverables_Alert]), 0) = 1
+    )
+)
 ```
+
+```DAX
+Nb Phases en alerte =
+COUNTROWS(
+    FILTER(
+        Fact_ProjectPhasePerformance,
+        IFERROR(VALUE(Fact_ProjectPhasePerformance[Alert_Count]), 0) > 0
+    )
+)
+```
+
+```DAX
+Taux phases en alerte =
+COALESCE(
+    DIVIDE([Nb Phases en alerte], [Nb Phases]),
+    0
+)
+```
+
+```DAX
+Nb Alertes =
+SUMX(
+    Fact_ProjectPhasePerformance,
+    IFERROR(VALUE(Fact_ProjectPhasePerformance[Alert_Count]), 0)
+)
+```
+
+```DAX
+Taux alertes cout =
+DIVIDE([Nb alertes cout], [Nb Phases])
+```
+
+```DAX
+Taux alertes duree =
+DIVIDE([Nb alertes duree], [Nb Phases])
+```
+
+```DAX
+Taux alertes livrables =
+DIVIDE([Nb alertes livrables], [Nb Phases])
+```
+
+## Valeurs de controle attendues
+
+Sans filtre actif, les mesures doivent retourner :
+
+| Mesure | Valeur attendue |
+|---|---:|
+| `Nb Projets` | 104 |
+| `Nb Phases` | 520 |
+| `Nb Phases en alerte` | 348 |
+| `Taux phases en alerte` | 66,92 % |
+| `Nb alertes cout` | 214 |
+| `Nb alertes duree` | 159 |
+| `Nb alertes livrables` | 96 |
 
 ## Format recommande
 
 | Mesure | Format |
 |---|---|
-| Montants | Devise, USD, separateur de milliers |
-| Pourcentages | Pourcentage, 1 decimale |
+| Montants | Devise, separateur de milliers |
+| Pourcentages | Pourcentage, 1 a 2 decimales selon le visuel |
 | Volumes | Nombre entier |
-| Scores | Nombre entier |
-
+| Scores et alertes | Nombre entier |

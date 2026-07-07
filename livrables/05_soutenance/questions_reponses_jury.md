@@ -59,3 +59,27 @@ Les mesures DAX sont au coeur de l'analyse.
 
 Les documenter permet de rendre le rapport plus maintenable et plus facile a expliquer pendant la soutenance.
 
+
+## Pourquoi seulement 2 pages ?
+
+Le rapport final privilegie la lisibilite et l'efficacite.
+
+La page `Vue executive` donne la synthese de pilotage, tandis que la page `Detail des alertes` permet d'identifier les lignes a traiter. Les filtres permettent ensuite d'adapter la lecture aux roles sans multiplier les pages.
+
+## Pourquoi un modele final a une seule table ?
+
+Les jointures entre les sources ont deja ete realisees dans Power Query pour construire `Fact_ProjectPhasePerformance`.
+
+Charger uniquement cette table simplifie le modele, evite les erreurs de relations et rend la soutenance plus claire. Les tables sources restent disponibles dans Power Query, mais ne sont pas chargees dans le modele final.
+
+## Pourquoi des mesures DAX robustes avec VALUE() et IFERROR() ?
+
+Certaines colonnes d'alerte peuvent etre interpretees comme du texte selon le typage Power Query ou Power BI.
+
+`VALUE()` convertit la valeur en nombre et `IFERROR()` evite qu'une valeur non convertible bloque le calcul. Les mesures restent donc fiables meme si une colonne d'alerte est typee en texte.
+
+## Comment controler la fiabilite du dashboard ?
+
+Je compare les KPI globaux sans filtre actif avec les valeurs de controle attendues : 104 projets, 520 phases, 348 phases en alerte, 66,92 % de phases en alerte, 214 alertes cout, 159 alertes duree et 96 alertes livrables.
+
+Je verifie aussi l'absence d'erreurs Power Query, l'unicite de `ProjectPhaseKey`, la presence des colonnes finales et le bon fonctionnement des filtres et visuels.
