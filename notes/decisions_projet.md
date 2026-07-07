@@ -63,3 +63,61 @@ Raison :
 - le scenario demande un rapport accessible aux trois types de directeurs ;
 - il ne faut pas creer une page totalement separee par role si les filtres permettent une lecture adaptee.
 
+
+## Modele final Power BI
+
+Decision :
+
+- conserver un modele final a une seule table chargee : `Fact_ProjectPhasePerformance`.
+
+Raison :
+
+- les jointures sont deja integrees dans Power Query ;
+- le modele est plus simple a controler et a expliquer ;
+- les mesures DAX restent directes et lisibles.
+
+## Rapport final en 2 pages
+
+Decision :
+
+- limiter le rapport final a 2 pages principales : `Vue executive` et `Detail des alertes`.
+
+Raison :
+
+- la premiere page donne une vision de pilotage globale ;
+- la seconde page permet d'analyser les phases en alerte ;
+- cette structure evite la dispersion et facilite la soutenance.
+
+## Filtres plutot qu'une page par role
+
+Decision :
+
+- utiliser les filtres `Project_Type`, `Country`, `Region`, `Alert_Status` et `Phase` plutot que de creer une page separee par role.
+
+Raison :
+
+- un meme rapport reste utilisable par la direction generale, les directions regionales et les directions pays ;
+- les utilisateurs peuvent adapter la lecture a leur perimetre sans dupliquer les visuels.
+
+## Design du dashboard
+
+Decision :
+
+- adopter un design clair avec cartes KPI, graphiques de synthese et tableau detaille.
+
+Raison :
+
+- les cartes KPI donnent les indicateurs prioritaires ;
+- les graphiques montrent la repartition des alertes ;
+- le tableau detaille permet d'identifier les phases a traiter.
+
+## Mise en forme conditionnelle
+
+Decision :
+
+- appliquer une mise en forme conditionnelle sur `Alert_Count` dans la page `Detail des alertes`.
+
+Raison :
+
+- les lignes les plus critiques sont immediatement visibles ;
+- le tri decroissant et la couleur facilitent la priorisation des actions.
