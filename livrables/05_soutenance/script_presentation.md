@@ -1,37 +1,41 @@
-# Script de presentation
+# Script de présentation
 
 ## Introduction
 
-Bonjour, je vais vous presenter le tableau de bord Power BI realise pour Sanitoral.
+Bonjour, je vais vous présenter le tableau de bord Power BI que j’ai réalisé pour Sanitoral.
 
-L'objectif de la mission est de rendre les donnees de suivi de projets plus lisibles et plus actionnables pour trois niveaux de direction : la direction generale, les directions regionales et les directions pays.
+Sanitoral suit des projets IT et Marketing répartis dans plusieurs pays et plusieurs régions du monde. L’objectif de la mission était de transformer des données de suivi de projet en un outil de pilotage clair, interactif et exploitable par différents niveaux de direction.
 
-Le rapport permet de suivre les couts, les delais et les livrables, et d'identifier les projets en alerte lorsqu'un ecart depasse le seuil de 15 % defini par Sanitoral.
+Le rapport permet de suivre les coûts, les délais et les livrables, puis d’identifier les phases en alerte lorsqu’un écart dépasse le seuil de 15 % défini par Sanitoral.
 
 ## Besoin client
 
-Sanitoral dispose de projets IT et Marketing repartis dans plusieurs regions du monde.
+Le besoin principal de Sanitoral était de rendre les données plus lisibles et plus actionnables.
 
-Le besoin principal est de transformer ces donnees en un outil visuel permettant :
+Le tableau de bord devait permettre :
 
-- de suivre la performance globale ;
-- d'identifier rapidement les retards et derives ;
-- de filtrer par type de projet, region, pays, statut d'alerte et phase ;
-- d'aider les directeurs a prendre des decisions.
+- de suivre la performance globale du portefeuille de projets ;
+- d’identifier rapidement les retards, les dérives de coût et les écarts de livrables ;
+- de filtrer les résultats par type de projet, région, pays, statut d’alerte et phase ;
+- d’aider les directeurs à prioriser leurs actions.
 
-## Methode
+Le rapport s’adresse à trois profils : la direction générale, les directions régionales et les directions pays. Il fallait donc construire un outil synthétique, mais suffisamment détaillé pour permettre l’analyse opérationnelle.
 
-J'ai d'abord formalise le besoin avec un Product Strategy Canvas.
+## Méthode
 
-Ensuite, j'ai prepare les 7 feuilles sources dans Power Query afin que le nettoyage soit automatique et reproductible.
+J’ai d’abord formalisé le besoin avec un Product Strategy Canvas. Cela m’a permis de clarifier les utilisateurs, les objectifs du rapport, les indicateurs attendus et la logique de décision.
 
-J'ai cree une cle `ProjectPhaseKey` pour relier correctement les donnees au niveau projet-phase, puis j'ai construit la table finale `Fact_ProjectPhasePerformance`.
+Ensuite, j’ai préparé les 7 feuilles sources dans Power Query. Le but était d’éviter un nettoyage manuel dans Excel et de rendre les transformations reproductibles lors des futures mises à jour.
 
-Le modele final charge uniquement cette table finale. Les tables sources restent utilisees dans Power Query, mais leur chargement est desactive dans le modele Power BI.
+J’ai notamment supprimé les lignes descriptives inutiles, promu les vrais en-têtes, harmonisé les noms de colonnes, corrigé les types de données et supprimé les lignes ou colonnes vides.
 
-Enfin, j'ai cree les mesures DAX, les indicateurs d'alerte et les visualisations du rapport.
+Pour relier correctement les données, j’ai créé une clé `ProjectPhaseKey`, basée sur le projet et la phase. Cette clé était nécessaire, car un projet peut avoir plusieurs phases, et les analyses doivent se faire au niveau projet-phase.
 
-## Resultats cles
+J’ai ensuite construit une table finale appelée `Fact_ProjectPhasePerformance`. Le modèle Power BI charge uniquement cette table finale. Les tables sources restent utilisées dans Power Query, mais leur chargement est désactivé dans le modèle afin de garder une structure simple et lisible.
+
+Enfin, j’ai créé les mesures DAX, les indicateurs d’alerte et les visualisations du rapport.
+
+## Résultats Clés
 
 Sans filtre actif, le dashboard affiche :
 
@@ -40,44 +44,48 @@ Sans filtre actif, le dashboard affiche :
 - 348 phases en alerte ;
 - 66,92 % de phases en alerte.
 
-Ces resultats montrent qu'une part importante du portefeuille necessite un suivi prioritaire.
+Ces résultats montrent qu’une part importante du portefeuille nécessite un suivi prioritaire.
 
-## Description des pages du rapport
+Le rapport met aussi en évidence que les alertes liées aux coûts sont les plus nombreuses, devant les alertes de durée et les alertes de livrables. Cela donne une première orientation pour les actions correctives.
 
-Le rapport final contient 2 pages.
+## Description Du Rapport
 
-### Vue executive
+Le rapport final contient deux pages principales.
 
-La page `Vue executive` donne une lecture globale avec :
+La première page est la **Vue exécutive**. Elle donne une lecture globale du portefeuille avec les cartes KPI principales, les filtres interactifs et les graphiques de synthèse.
 
-- les cartes KPI principales ;
-- les filtres par type de projet, pays, region, statut d'alerte et phase ;
-- un graphique des phases en alerte par region ;
-- un graphique des phases en alerte par type de projet ;
-- une repartition des alertes par nature : cout, duree et livrables.
+On y retrouve :
 
-Cette page permet de voir rapidement ou se concentrent les alertes et quel type de probleme domine.
+- les phases en alerte par région ;
+- les phases en alerte par type de projet ;
+- la répartition des alertes par nature : coût, durée et livrables.
 
-### Detail des alertes
+Cette page permet de comprendre rapidement où se concentrent les alertes et quel type de problème domine.
 
-La page `Detail des alertes` contient un tableau filtre sur les phases en alerte.
+La deuxième page est la page **Détail des alertes**. Elle permet d’aller plus loin dans l’analyse.
 
-Le tableau affiche le projet, la phase, le pays, la region, le type de projet, le nombre d'alertes, le statut d'alerte et l'ecart de cout.
+Elle contient un tableau filtré sur les phases en alerte. On y retrouve le projet, la phase, le pays, la région, le type de projet, le nombre d’alertes, le statut d’alerte et l’écart de coût.
 
-Il est trie par `Alert_Count` decroissant et utilise une mise en forme conditionnelle pour faire ressortir les lignes les plus critiques.
+Le tableau est trié par nombre d’alertes décroissant, ce qui permet de faire remonter en priorité les phases les plus critiques. Une mise en forme conditionnelle permet aussi d’identifier visuellement les cas les plus sensibles.
 
-## Lecture des alertes
+## Lecture Des Alertes
 
-Les alertes peuvent etre lues selon trois axes principaux :
+Les alertes peuvent être analysées selon trois axes principaux.
 
-- par region, pour identifier les zones geographiques les plus exposees ;
-- par type de projet, pour comparer les projets IT et Marketing ;
-- par nature d'alerte, pour distinguer les problemes de cout, de duree et de livrables.
+Le premier axe est géographique. L’analyse par région permet d’identifier les zones où les phases en alerte sont les plus nombreuses.
 
-Cette lecture aide Sanitoral a prioriser les actions correctives au bon niveau : portefeuille, region, pays, projet ou phase.
+Le deuxième axe concerne le type de projet. La comparaison entre projets IT et projets Marketing permet de voir si un type de projet concentre davantage de risques.
+
+Le troisième axe est la nature de l’alerte. Le rapport distingue les alertes de coût, de durée et de livrables. Cette lecture aide à comprendre si le problème principal vient plutôt d’un dépassement budgétaire, d’un retard ou d’un manque de livrables.
+
+Cette approche permet à Sanitoral de prioriser les actions correctives au bon niveau : portefeuille, région, pays, projet ou phase.
 
 ## Conclusion
 
-Ce tableau de bord permet de passer d'un fichier de donnees difficile a exploiter a un outil de pilotage clair, interactif et oriente decision.
+Ce tableau de bord permet de passer d’un fichier de données difficile à exploiter à un outil de pilotage clair, interactif et orienté décision.
 
-Il donne une vision globale au directeur general, une vision filtree aux directeurs regionaux, et une vision operationnelle aux directeurs pays.
+Il donne une vision globale à la direction générale, une vision filtrée aux directions régionales, et une vision opérationnelle aux directions pays.
+
+Le principal intérêt du rapport est de rendre les alertes visibles rapidement, tout en permettant de descendre dans le détail lorsque c’est nécessaire.
+
+Pour conclure, ce dashboard apporte à Sanitoral une base fiable pour suivre ses projets, identifier les priorités et mieux piloter les écarts entre le prévu et le réalisé.
