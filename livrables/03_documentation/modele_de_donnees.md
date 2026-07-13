@@ -1,12 +1,12 @@
-# Modele de donnees
+# Modèle de données
 
-Ce document decrit le modele de donnees final du rapport Power BI Sanitoral.
+Ce document décrit le modèle de données final du rapport Power BI Sanitoral.
 
 ## Principe retenu
 
-Le modele final est volontairement simple : une seule table est chargee dans Power BI, `Fact_ProjectPhasePerformance`.
+Le modèle final est volontairement simple : une seule table est chargée dans Power BI, `Fact_ProjectPhasePerformance`.
 
-Les 7 tables sources sont utilisees dans Power Query pour nettoyer, typer, creer les cles et realiser les jointures. Elles ne sont pas chargees dans le modele final.
+Les 7 tables sources sont utilisées dans Power Query pour nettoyer, typer, créer les clés et réaliser les jointures. Elles ne sont pas chargées dans le modèle final.
 
 ## Grain d'analyse
 
@@ -16,7 +16,7 @@ Le grain principal est la phase d'un projet :
 1 projet + 1 phase
 ```
 
-La cle logique est :
+La clé logique est :
 
 ```text
 ProjectPhaseKey = Text.From([Project_ID]) & "|" & [Phase]
@@ -24,41 +24,41 @@ ProjectPhaseKey = Text.From([Project_ID]) & "|" & [Phase]
 
 ## Tables sources Power Query
 
-| Table source | Role |
+| Table source | Rôle |
 |---|---|
-| `Projects_plans` | Donnees prevues par projet et phase. |
+| `Projects_plans` | Données prévues par projet et phase. |
 | `Project type` | Type de projet. |
-| `Actual_Costs` | Couts reels par projet et phase. |
-| `Actual_Duration` | Durees reelles par projet et phase. |
-| `Actual_Delivrable` | Livrables reels par projet et phase. |
+| `Actual_Costs` | Coûts réels par projet et phase. |
+| `Actual_Duration` | Durées réelles par projet et phase. |
+| `Actual_Delivrable` | Livrables réels par projet et phase. |
 | `Projects_Locations` | Pays de chaque projet. |
-| `Country_Profiles` | Region et type d'entite. |
+| `Country_Profiles` | Région et type d'entité. |
 
-## Table finale chargee
+## Table finale chargée
 
-`Fact_ProjectPhasePerformance` contient les informations prevues, les valeurs reelles, les attributs projet/pays et les indicateurs d'alerte.
+`Fact_ProjectPhasePerformance` contient les informations prévues, les valeurs réelles, les attributs projet/pays et les indicateurs d'alerte.
 
 Colonnes principales :
 
-| Colonne | Role |
+| Colonne | Rôle |
 |---|---|
 | `Project_ID` | Identifiant du projet. |
 | `Phase` | Phase du projet. |
-| `Start_Date` | Date de debut de la phase. |
-| `Planned_Duration` | Duree prevue. |
-| `Planned_Cost` | Cout prevu. |
-| `Planned_Deliverables` | Livrables prevus. |
-| `ProjectPhaseKey` | Cle unique projet-phase. |
-| `Actual_Cost` | Cout reel. |
-| `Actual_Duration` | Duree reelle. |
-| `Actual_Deliverables` | Livrables reels. |
+| `Start_Date` | Date de début de la phase. |
+| `Planned_Duration` | Durée prévue. |
+| `Planned_Cost` | Coût prévu. |
+| `Planned_Deliverables` | Livrables prévus. |
+| `ProjectPhaseKey` | Clé unique projet-phase. |
+| `Actual_Cost` | Coût réel. |
+| `Actual_Duration` | Durée réelle. |
+| `Actual_Deliverables` | Livrables réels. |
 | `Project_Type` | Type de projet. |
 | `Country` | Pays. |
-| `Region` | Region. |
-| `Entity_Type` | Type d'entite locale. |
-| `Cost_Difference_Pct` | Ecart de cout en pourcentage. |
-| `Cost_Alert` | Alerte cout. |
-| `Duration_Alert` | Alerte duree. |
+| `Region` | Région. |
+| `Entity_Type` | Type d'entité locale. |
+| `Cost_Difference_Pct` | Écart de coût en pourcentage. |
+| `Cost_Alert` | Alerte coût. |
+| `Duration_Alert` | Alerte durée. |
 | `Deliverables_Alert` | Alerte livrables. |
 | `Any_Alert` | Alerte globale. |
 | `Alert_Count` | Nombre d'alertes. |
@@ -66,14 +66,14 @@ Colonnes principales :
 
 ## Relations
 
-Aucune relation n'est necessaire dans le modele final, car les jointures ont deja ete integrees dans `Fact_ProjectPhasePerformance` avec Power Query.
+Aucune relation n'est nécessaire dans le modèle final, car les jointures ont déjà été intégrées dans `Fact_ProjectPhasePerformance` avec Power Query.
 
-Ce choix reduit le risque d'erreur de relation, facilite la soutenance et rend les mesures DAX plus directes.
+Ce choix réduit le risque d'erreur de relation, facilite la soutenance et rend les mesures DAX plus directes.
 
 ## Points de vigilance
 
-- `Phase` seule ne doit pas etre utilisee comme cle unique.
-- `Project_ID` seul ne suffit pas pour relier les couts, durees et livrables au niveau phase.
+- `Phase` seule ne doit pas être utilisée comme clé unique.
+- `Project_ID` seul ne suffit pas pour relier les coûts, durées et livrables au niveau phase.
 - Les colonnes finales doivent conserver les noms `Start_Date` et `Entity_Type`.
-- Les tables intermediaires doivent rester desactivees au chargement.
-- Les valeurs de controle doivent etre verifiees apres actualisation.
+- Les tables intermédiaires doivent rester désactivées au chargement.
+- Les valeurs de contrôle doivent être vérifiées après actualisation.
