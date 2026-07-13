@@ -2,13 +2,13 @@
 
 Ce document centralise les mesures DAX du rapport Power BI Sanitoral.
 
-Table utilisee :
+Table utilisée :
 
 ```text
 Fact_ProjectPhasePerformance
 ```
 
-## Volumetrie
+## Volumétrie
 
 ```DAX
 Nb Projets =
@@ -20,78 +20,78 @@ Nb Phases =
 COUNTROWS(Fact_ProjectPhasePerformance)
 ```
 
-## Couts
+## Coûts
 
 ```DAX
-Cout Prevu =
+Coût Prévu =
 SUM(Fact_ProjectPhasePerformance[Planned_Cost])
 ```
 
 ```DAX
-Cout Reel =
+Coût Réel =
 SUM(Fact_ProjectPhasePerformance[Actual_Cost])
 ```
 
 ```DAX
-Ecart Cout =
-[Cout Reel] - [Cout Prevu]
+Écart Coût =
+[Coût Réel] - [Coût Prévu]
 ```
 
 ```DAX
-Ecart Cout % =
-DIVIDE([Ecart Cout], [Cout Prevu])
+Écart Coût % =
+DIVIDE([Écart Coût], [Coût Prévu])
 ```
 
-## Durees
+## Durées
 
 ```DAX
-Duree Prevue =
+Durée Prévue =
 SUM(Fact_ProjectPhasePerformance[Planned_Duration])
 ```
 
 ```DAX
-Duree Reelle =
+Durée Réelle =
 SUM(Fact_ProjectPhasePerformance[Actual_Duration])
 ```
 
 ```DAX
-Ecart Duree =
-[Duree Reelle] - [Duree Prevue]
+Écart Durée =
+[Durée Réelle] - [Durée Prévue]
 ```
 
 ```DAX
-Ecart Duree % =
-DIVIDE([Ecart Duree], [Duree Prevue])
+Écart Durée % =
+DIVIDE([Écart Durée], [Durée Prévue])
 ```
 
 ## Livrables
 
 ```DAX
-Livrables Prevus =
+Livrables Prévus =
 SUM(Fact_ProjectPhasePerformance[Planned_Deliverables])
 ```
 
 ```DAX
-Livrables Reels =
+Livrables Réels =
 SUM(Fact_ProjectPhasePerformance[Actual_Deliverables])
 ```
 
 ```DAX
-Ecart Livrables =
-[Livrables Reels] - [Livrables Prevus]
+Écart Livrables =
+[Livrables Réels] - [Livrables Prévus]
 ```
 
 ```DAX
-Ecart Livrables % =
-DIVIDE([Ecart Livrables], [Livrables Prevus])
+Écart Livrables % =
+DIVIDE([Écart Livrables], [Livrables Prévus])
 ```
 
 ## Alertes
 
-Les mesures d'alerte utilisent `VALUE()` et `IFERROR()` afin de rester robustes si les colonnes d'alerte sont importees ou conservees en texte dans Power BI.
+Les mesures d'alerte utilisent `VALUE()` et `IFERROR()` afin de rester robustes si les colonnes d'alerte sont importees ou conservées en texte dans Power BI.
 
 ```DAX
-Nb alertes cout =
+Nb alertes coût =
 COUNTROWS(
     FILTER(
         Fact_ProjectPhasePerformance,
@@ -101,7 +101,7 @@ COUNTROWS(
 ```
 
 ```DAX
-Nb alertes duree =
+Nb alertes durée =
 COUNTROWS(
     FILTER(
         Fact_ProjectPhasePerformance,
@@ -147,13 +147,13 @@ SUMX(
 ```
 
 ```DAX
-Taux alertes cout =
-DIVIDE([Nb alertes cout], [Nb Phases])
+Taux alertes coût =
+DIVIDE([Nb alertes coût], [Nb Phases])
 ```
 
 ```DAX
-Taux alertes duree =
-DIVIDE([Nb alertes duree], [Nb Phases])
+Taux alertes durée =
+DIVIDE([Nb alertes durée], [Nb Phases])
 ```
 
 ```DAX
@@ -161,7 +161,7 @@ Taux alertes livrables =
 DIVIDE([Nb alertes livrables], [Nb Phases])
 ```
 
-## Valeurs de controle attendues
+## Valeurs de contrôle attendues
 
 Sans filtre actif, les mesures doivent retourner :
 
@@ -171,15 +171,15 @@ Sans filtre actif, les mesures doivent retourner :
 | `Nb Phases` | 520 |
 | `Nb Phases en alerte` | 348 |
 | `Taux phases en alerte` | 66,92 % |
-| `Nb alertes cout` | 214 |
-| `Nb alertes duree` | 159 |
+| `Nb alertes coût` | 214 |
+| `Nb alertes durée` | 159 |
 | `Nb alertes livrables` | 96 |
 
-## Format recommande
+## Format recommandé
 
 | Mesure | Format |
 |---|---|
-| Montants | Devise, separateur de milliers |
-| Pourcentages | Pourcentage, 1 a 2 decimales selon le visuel |
+| Montants | Devise, séparateur de milliers |
+| Pourcentages | Pourcentage, 1 à 2 décimales selon le visuel |
 | Volumes | Nombre entier |
 | Scores et alertes | Nombre entier |

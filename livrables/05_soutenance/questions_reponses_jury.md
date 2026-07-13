@@ -1,4 +1,4 @@
-# Questions / Réponses Probables Du Jury
+# Questions / réponses probables du jury
 
 ## Pourquoi avoir créé une clé projet-phase ?
 
@@ -32,15 +32,17 @@ Plutôt que de créer une page différente pour chaque profil, j’ai choisi d�
 
 Cette approche évite de multiplier les pages et garde le rapport plus simple à maintenir.
 
-## Pourquoi seulement deux pages ?
+## Pourquoi trois pages finales ?
 
-Le rapport final privilégie la lisibilité et l’efficacité.
+Le rapport final privilégie la lisibilité et l’efficacité avec 3 pages finales complémentaires.
 
 La page `Vue exécutive` donne la synthèse de pilotage avec les KPI, les filtres et les graphiques principaux.
 
 La page `Détail des alertes` permet ensuite d’identifier les phases à traiter en priorité.
 
-Cette séparation évite de surcharger la page principale tout en gardant un accès rapide au détail opérationnel.
+La page `Documentation & Méthode` présente le Product Strategy Canvas, les étapes de préparation et de mise à jour des données, le modèle de données, les transformations Power Query, la règle d’alerte à 15 % et les KPI de contrôle.
+
+Cette organisation évite de surcharger la page principale tout en gardant un accès rapide au détail opérationnel et aux éléments méthodologiques utiles pendant la soutenance.
 
 ## Pourquoi un modèle final à une seule table ?
 

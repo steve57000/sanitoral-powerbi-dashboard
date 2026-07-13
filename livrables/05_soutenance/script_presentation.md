@@ -35,7 +35,7 @@ J’ai ensuite construit une table finale appelée `Fact_ProjectPhasePerformance
 
 Enfin, j’ai créé les mesures DAX, les indicateurs d’alerte et les visualisations du rapport.
 
-## Résultats Clés
+## Résultats clés
 
 Sans filtre actif, le dashboard affiche :
 
@@ -48,9 +48,9 @@ Ces résultats montrent qu’une part importante du portefeuille nécessite un s
 
 Le rapport met aussi en évidence que les alertes liées aux coûts sont les plus nombreuses, devant les alertes de durée et les alertes de livrables. Cela donne une première orientation pour les actions correctives.
 
-## Description Du Rapport
+## Description du rapport
 
-Le rapport final contient deux pages principales.
+Le rapport final contient 3 pages finales.
 
 La première page est la **Vue exécutive**. Elle donne une lecture globale du portefeuille avec les cartes KPI principales, les filtres interactifs et les graphiques de synthèse.
 
@@ -68,7 +68,9 @@ Elle contient un tableau filtré sur les phases en alerte. On y retrouve le proj
 
 Le tableau est trié par nombre d’alertes décroissant, ce qui permet de faire remonter en priorité les phases les plus critiques. Une mise en forme conditionnelle permet aussi d’identifier visuellement les cas les plus sensibles.
 
-## Lecture Des Alertes
+La troisième page est la page **Documentation & Méthode**. Elle sert de support de lecture et de traçabilité : elle rappelle le Product Strategy Canvas, les étapes de préparation et de mise à jour des données, le modèle, les transformations Power Query, la règle d’alerte à 15 % et les KPI de contrôle.
+
+## Lecture des alertes
 
 Les alertes peuvent être analysées selon trois axes principaux.
 
