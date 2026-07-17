@@ -1,145 +1,129 @@
 # Questions / réponses probables du jury
 
-## Pourquoi avoir créé une clé projet-phase ?
+## Pourquoi avoir créé ProjectPhaseKey ?
 
-Chaque ligne du jeu de données représente une phase d’un projet, et non un projet complet.
+Chaque ligne représente une phase d'un projet. `Project_ID` seul se répète donc plusieurs fois et `Phase` seule est partagée par plusieurs projets.
 
-`Project_ID` seul ne suffit donc pas, car un même projet apparaît sur plusieurs lignes, une fois par phase. À l’inverse, `Phase` seule ne suffit pas non plus, car plusieurs projets partagent les mêmes noms de phases.
+`ProjectPhaseKey` combine les deux informations et permet de rattacher le coût, la durée et les livrables réels à la bonne phase planifiée. Les 520 clés sont uniques dans chacune des quatre tables projet-phase.
 
-La clé `ProjectPhaseKey` permet de relier correctement les coûts, les durées et les livrables au bon niveau d’analyse : le couple projet-phase.
+## Pourquoi les tables Actual doivent-elles être reliées à Projects_Plans ?
+
+Les données prévues et réelles sont toutes au grain projet-phase. Les relier par `ProjectPhaseKey` garantit que la comparaison porte sur la même phase du même projet.
+
+Une relation directe avec `Project_Type` par `Project_ID` filtre bien le type de projet, mais elle ne garantit pas le rattachement à la phase et peut créer plusieurs chemins de filtrage. `Projects_Plans` est donc le bon point central.
+
+## Pourquoi ne pas conserver uniquement la table fusionnée ?
+
+La table fusionnée produisait les bons résultats, mais elle ne montrait aucune relation dans la vue Modèle. Or la mission demande de créer, capturer et expliquer le modèle de données.
+
+Le modèle relationnel rend la granularité et les cardinalités visibles, limite la duplication des attributs et répond mieux à l'objectif pédagogique.
+
+## Pourquoi ne pas charger les sept tables en plus de la table fusionnée ?
+
+Cela créerait deux modèles concurrents contenant les mêmes données. Les utilisateurs pourraient choisir des champs provenant de tables différentes et obtenir des résultats incohérents.
+
+La table fusionnée peut être conservée temporairement pendant le remappage, puis son chargement doit être désactivé.
+
+## Quelle cardinalité utilisez-vous ?
+
+`Project_Type` et `Projects_Locations` sont reliées à `Projects_Plans` en un-vers-plusieurs. `Country_Profiles` est reliée à `Projects_Locations` en un-vers-plusieurs.
+
+Les trois tables de réalisé sont reliées à `Projects_Plans` en un-vers-un, car `ProjectPhaseKey` est unique des deux côtés. Aucune relation plusieurs-à-plusieurs n'est nécessaire.
+
+## Pourquoi Actual_Deliverables et non Actual_Delivrable ?
+
+`Deliverables` est l'orthographe anglaise correcte et le nom utilisé par le dictionnaire pour la colonne de livrables réels.
+
+La feuille Excel source conserve son nom d'origine `Actual_Delivrable`, car le fichier source ne doit pas être modifié. Seule la requête Power Query est renommée `Actual_Deliverables`.
 
 ## Pourquoi faire le nettoyage dans Power Query ?
 
-Le scénario précise que Sanitoral souhaite mettre à jour l’analyse régulièrement.
+Sanitoral souhaite mettre à jour l'analyse chaque semaine. Power Query mémorise les étapes de suppression des lignes inutiles, promotion des en-têtes, renommage, typage et contrôle des données.
 
-Power Query permet d’automatiser les transformations : suppression des lignes inutiles, promotion des vrais en-têtes, renommage des colonnes, correction des types, suppression des valeurs vides et jointures entre les tables.
+Cela évite de corriger manuellement le fichier Excel à chaque actualisation et rend la procédure reproductible.
 
-Cela évite de refaire le nettoyage manuellement dans Excel à chaque mise à jour et rend le processus plus fiable et reproductible.
+## Pourquoi typer ProjectPhaseKey en Texte ?
 
-## Pourquoi utiliser un seuil de 15 % ?
+La clé combine un identifiant numérique et un libellé de phase. Elle doit donc être traitée comme un identifiant texte stable. Le type `Any` peut produire des comportements imprévisibles ou masquer des incohérences.
 
-Le seuil de 15 % vient de la note de cadrage.
+## Pourquoi ne plus utiliser VALUE et IFERROR dans les mesures d'alerte ?
 
-Sanitoral considère qu’un écart supérieur à 15 % entre le prévu et le réel doit déclencher une alerte.
+Les indicateurs d'alerte doivent être créés et typés comme des nombres entiers. Dans ce cas, un simple `SUM` suffit.
 
-J’ai donc appliqué cette règle aux trois axes principaux du suivi projet : les coûts, les durées et les livrables.
+`VALUE` et `IFERROR` peuvent masquer un problème de typage. Il est plus propre de corriger le type dans Power Query ou dans la colonne calculée.
+
+## Pourquoi un seuil strictement supérieur à 15 % ?
+
+La règle métier indique qu'une différence de plus de 15 % déclenche une alerte. Les conditions utilisent donc `> 0,15` pour les coûts et durées et `< -0,15` pour les livrables.
+
+Un écart exactement égal à 15 % n'est pas compté comme alerte.
+
+## Pourquoi quatre pages ?
+
+La `Vue exécutive` donne la synthèse. `Détail des alertes` permet l'action opérationnelle. `Planning Gantt` apporte la lecture temporelle. `Documentation du rapport` explique le PSC, la mise à jour et le modèle.
+
+Les analyses géographique et stratégique envisagées dans le PSC ont été intégrées aux pages exécutive et détail afin de limiter le nombre d'onglets.
 
 ## Pourquoi ne pas faire une page par utilisateur ?
 
-Le rapport doit rester utilisable par trois profils : la direction générale, les directions régionales et les directions pays.
+Les trois profils ont besoin des mêmes indicateurs à des niveaux différents. Les segments permettent de passer d'une vision globale à une région ou un pays sans dupliquer les pages et la maintenance.
 
-Plutôt que de créer une page différente pour chaque profil, j’ai choisi d’utiliser des filtres et des segments. Cela permet à chacun d’adapter la lecture à son périmètre : global, régional, pays, type de projet ou phase.
+## Pourquoi varier les graphiques ?
 
-Cette approche évite de multiplier les pages et garde le rapport plus simple à maintenir.
+Chaque visuel répond à un besoin différent : les barres classent les régions, les colonnes empilées comparent des proportions, l'anneau montre la composition des alertes et la carte répond à la dimension géographique demandée par Sanitoral.
 
-## Pourquoi trois pages finales ?
+## Pourquoi utiliser des taux plutôt que seulement des nombres ?
 
-Le rapport final privilégie la lisibilité et l’efficacité avec 3 pages finales complémentaires.
+Les projets IT comportent six phases et les projets Marketing quatre. Comparer seulement les volumes favorise mécaniquement l'IT.
 
-La page `Vue exécutive` donne la synthèse de pilotage avec les KPI, les filtres et les graphiques principaux.
+Le taux permet une comparaison équitable. Le volume reste disponible dans les étiquettes ou infobulles pour mesurer la charge opérationnelle.
 
-La page `Détail des alertes` permet ensuite d’identifier les phases à traiter en priorité.
+## Pourquoi utiliser une carte mondiale ?
 
-La page `Documentation & Méthode` présente le Product Strategy Canvas, les étapes de préparation et de mise à jour des données, le modèle de données, les transformations Power Query, la règle d’alerte à 15 % et les KPI de contrôle.
+La note de cadrage la demande explicitement. Elle permet aux directions générale et régionales de localiser les pays où le taux d'alerte est élevé.
 
-Cette organisation évite de surcharger la page principale tout en gardant un accès rapide au détail opérationnel et aux éléments méthodologiques utiles pendant la soutenance.
+Les noms de pays sont catégorisés comme pays/région et les variantes ambiguës sont normalisées dans Power Query si nécessaire.
 
-## Pourquoi un modèle final à une seule table ?
+## Pourquoi le coût est-il affiché en dollars ?
 
-Les jointures entre les sources ont déjà été réalisées dans Power Query pour construire la table finale `Fact_ProjectPhasePerformance`.
+Le dictionnaire précise que `Actual_Cost` et `Planned_Cost` sont exprimés en USD. Afficher des euros sans conversion serait incorrect.
 
-Charger uniquement cette table simplifie le modèle, évite les relations inutiles et rend le rapport plus facile à expliquer pendant la soutenance.
+## Quelles sont les valeurs de contrôle ?
 
-Les tables sources restent utilisées dans Power Query pour la préparation des données, mais elles ne sont pas chargées dans le modèle final.
+Sans filtre actif :
 
-## Est-ce qu’un modèle en étoile aurait été possible ?
+- 104 projets ;
+- 102 projets en alerte ;
+- 520 phases ;
+- 348 phases en alerte, soit 66,92 % ;
+- 214 alertes coût ;
+- 159 alertes durée ;
+- 96 alertes livrables ;
+- 469 occurrences d'alerte ;
+- 56 108 000 USD prévus et 60 200 800 USD réels.
 
-Oui, un modèle en étoile aurait été possible avec des dimensions comme `Dim_Project`, `Dim_Country`, `Dim_Phase` ou `Dim_ProjectType`.
+## Pourquoi 469 alertes mais seulement 348 phases en alerte ?
 
-Cependant, pour ce projet, le grain d’analyse est simple : une ligne correspond à une phase d’un projet. La table finale contient déjà les informations nécessaires pour filtrer et analyser les résultats.
+Une même phase peut cumuler une alerte de coût, de durée et de livrables. Les 469 occurrences correspondent à la somme des trois natures d'alerte, tandis que les 348 phases ne sont comptées qu'une seule fois chacune.
 
-J’ai donc privilégié un modèle plus direct, plus lisible et adapté à la taille du jeu de données.
+## Quel axe stratégique ressort de l'analyse ?
 
-## Pourquoi documenter les mesures DAX ?
+Les projets IT ont un taux d'alerte de 72,12 %, supérieur aux 59,13 % des projets Marketing. Surtout, les 52 phases `Phase D - Testing` sont toutes en alerte.
 
-Les mesures DAX sont au cœur de l’analyse.
-
-Elles permettent de calculer les KPI, les écarts et les alertes affichés dans le rapport.
-
-Les documenter rend le dashboard plus maintenable, plus facile à vérifier et plus simple à expliquer au jury ou à un futur utilisateur.
-
-## Pourquoi des mesures DAX robustes avec `VALUE()` et `IFERROR()` ?
-
-Certaines colonnes d’alerte peuvent être interprétées comme du texte selon le typage appliqué dans Power Query ou Power BI.
-
-`VALUE()` permet de convertir la valeur en nombre, et `IFERROR()` évite qu’une valeur non convertible bloque le calcul.
-
-Cela rend les mesures plus robustes et évite les erreurs lors de l’affichage des visuels.
+La recommandation est de revoir les estimations et les contrôles de la phase de test, puis de formaliser des critères d'entrée, de sortie et des points de contrôle intermédiaires.
 
 ## Comment vérifier que le modèle est fiable ?
 
-Je vérifie plusieurs points :
+Je vérifie les volumes, l'unicité des clés, l'absence de valeurs manquantes, les cardinalités, l'absence de relation plusieurs-à-plusieurs, les KPI globaux et les interactions des visuels.
 
-- le nombre de projets ;
-- le nombre de phases ;
-- l’unicité de la clé `ProjectPhaseKey` ;
-- l’absence d’erreurs Power Query ;
-- l’absence de valeurs manquantes après les jointures ;
-- la cohérence des totaux de coûts, durées et livrables ;
-- le bon fonctionnement des filtres et des visuels.
+J'effectue également une actualisation complète et je compare les résultats aux valeurs de contrôle.
 
-Je compare aussi les KPI globaux avec les valeurs de contrôle attendues.
+## Comment mettre le rapport à jour ?
 
-## Quelles sont les valeurs de contrôle du dashboard ?
-
-Sans filtre actif, le dashboard doit afficher :
-
-- 104 projets ;
-- 520 phases ;
-- 348 phases en alerte ;
-- 66,92 % de phases en alerte ;
-- 214 alertes coût ;
-- 159 alertes durée ;
-- 96 alertes livrables.
-
-Ces valeurs servent de référence pour vérifier que les transformations, les mesures et les visuels fonctionnent correctement.
-
-## Quelle recommandation stratégique ressort de l’analyse ?
-
-Les projets IT concentrent une part importante des alertes.
-
-Les alertes de coût sont également les plus nombreuses, devant les alertes de durée et de livrables.
-
-Une recommandation possible est donc de renforcer le suivi budgétaire des projets IT, en particulier sur les phases les plus critiques. Sanitoral pourrait aussi revoir ses méthodes d’estimation et ses points de contrôle intermédiaires pour limiter les dérives avant qu’elles deviennent trop importantes.
-
-## Pourquoi avoir utilisé une mise en forme conditionnelle dans le tableau de détail ?
-
-La mise en forme conditionnelle permet d’identifier rapidement les phases les plus critiques.
-
-Dans le tableau `Détail des alertes`, la colonne `Alert_Count` indique si une phase cumule une, deux ou trois alertes.
-
-En colorant cette colonne, on fait ressortir immédiatement les lignes à traiter en priorité.
-
-## Quel est l’intérêt des filtres ?
-
-Les filtres rendent le rapport interactif.
-
-Ils permettent de passer d’une vision globale à une vision plus ciblée : par région, pays, type de projet, phase ou statut d’alerte.
-
-C’est ce qui permet au même rapport de répondre aux besoins de plusieurs profils de direction.
+Le fichier Excel est remplacé ou complété en conservant la même structure. Power Query rejoue automatiquement les transformations. Après `Fermer et appliquer`, je contrôle les relations, les erreurs, les KPI et les quatre pages avant d'enregistrer et d'exporter.
 
 ## Quelles limites peut-on identifier ?
 
-Le rapport dépend de la qualité du fichier source.
+Le rapport dépend de la stabilité des feuilles et colonnes sources. Une modification de structure peut nécessiter une adaptation de Power Query.
 
-Si les noms de feuilles, les colonnes ou la structure du fichier Excel changent fortement, certaines étapes Power Query peuvent nécessiter une adaptation.
-
-De plus, le dashboard indique les écarts et les zones à risque, mais il ne donne pas à lui seul la cause métier exacte de chaque dérive. Une analyse complémentaire peut être nécessaire avec les responsables projet.
-
-## Comment le rapport peut-il être mis à jour ?
-
-La mise à jour se fait en remplaçant ou en actualisant le fichier source, puis en lançant l’actualisation dans Power BI.
-
-Les transformations Power Query appliquent automatiquement les étapes de nettoyage et de fusion.
-
-Après actualisation, je vérifie les KPI globaux, l’absence d’erreurs Power Query et la cohérence des visuels.
+Le dashboard identifie les écarts et les zones à risque, mais l'explication métier précise d'une dérive nécessite un échange avec le responsable du projet.

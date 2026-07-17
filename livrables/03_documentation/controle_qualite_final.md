@@ -1,87 +1,104 @@
 # Contrôle qualité final
 
-Cette checklist sert à vérifier le dashboard Power BI Sanitoral avant remise.
+Cette checklist doit être complétée dans Power BI Desktop après application de la révision mentor.
 
-## Checklist fichiers attendus
+## Fichiers
 
-- [x] `livrables/01_product_strategy_canvas/Product_Strategy_Canvas_Sanitoral_Bell_Steve.docx` présent.
-- [x] `livrables/02_powerbi/Sanitoral_PowerBI_Dashboard_Bell_Steve.pbix` présent.
-- [x] Documentation présente dans `livrables/03_documentation/`.
-- [x] Captures ajoutées dans `livrables/04_exports/captures_dashboard/`.
-- [x] Export PDF ajouté dans `livrables/04_exports/export_pdf/`.
-- [x] Script de présentation et questions jury présents dans `livrables/05_soutenance/`.
+- [x] Product Strategy Canvas présent.
+- [x] PBIX présent dans `livrables/02_powerbi/`.
+- [x] Documentation relationnelle et DAX mise à jour.
+- [x] Script de présentation et questions jury présents.
+- [ ] PBIX remplacé par la version relationnelle validée.
+- [ ] Captures des 4 pages remplacées après révision.
+- [ ] Export PDF des 4 pages remplacé après révision.
+- [ ] Capture lisible de la vue Modèle ajoutée.
 
-## Checklist Power Query
+## Power Query
 
-- [x] Les 7 feuilles sources sont importées : `Projects_plans`, `Project type`, `Actual_Costs`, `Actual_Duration`, `Actual_Delivrable`, `Projects_Locations`, `Country_Profiles`.
-- [x] Les lignes descriptives et vides sont supprimées.
-- [x] Les en-têtes sont correctement promus.
-- [x] Les noms de colonnes sont harmonisés.
-- [x] Les types de données sont corrigés.
-- [x] `ProjectPhaseKey` est créée avec `Text.From([Project_ID]) & "|" & [Phase]`.
-- [x] Les jointures alimentent correctement `Fact_ProjectPhasePerformance`.
-- [x] Les tables intermédiaires sont désactivées au chargement.
+- [ ] Les requêtes sont nommées `Projects_Plans`, `Project_Type`, `Actual_Costs`, `Actual_Duration`, `Actual_Deliverables`, `Projects_Locations`, `Country_Profiles`.
+- [ ] La feuille source `Actual_Delivrable` n'a pas été modifiée manuellement.
+- [ ] Les lignes descriptives et vides sont supprimées.
+- [ ] Les en-têtes et noms de colonnes sont harmonisés.
+- [ ] Les types sont appliqués explicitement.
+- [ ] `ProjectPhaseKey` utilise `Text.From([Project_ID]) & "|" & [Phase]`.
+- [ ] `ProjectPhaseKey` est de type Texte dans les quatre tables projet-phase.
+- [ ] Chaque table projet-phase contient 520 clés distinctes et 0 doublon.
+- [ ] Les indicateurs d'alerte sont numériques.
+- [ ] Les sept tables relationnelles sont chargées.
+- [ ] `Fact_ProjectPhasePerformance` n'est plus chargée après remappage.
 
-## Checklist modèle
+## Modèle
 
-- [x] Une seule table est chargée : `Fact_ProjectPhasePerformance`.
-- [x] Aucune relation n'est nécessaire dans le modèle final.
-- [x] Les colonnes finales attendues sont présentes.
-- [x] Les mesures DAX principales sont créées.
-- [x] Les mesures d'alerte utilisent `VALUE()` et `IFERROR()` pour gérer les colonnes typées en texte.
+- [ ] `Project_Type[Project_ID]` est reliée à `Projects_Plans[Project_ID]` en 1-*.
+- [ ] `Projects_Locations[Project_ID]` est reliée à `Projects_Plans[Project_ID]` en 1-*.
+- [ ] `Country_Profiles[Country]` est reliée à `Projects_Locations[Country]` en 1-*.
+- [ ] `Projects_Plans[ProjectPhaseKey]` est reliée à chaque table `Actual_*` en 1-1.
+- [ ] Aucune table `Actual_*` n'est reliée directement à `Project_Type`.
+- [ ] Aucune relation plusieurs-à-plusieurs n'existe.
+- [ ] Les six relations sont actives et visibles dans la vue Modèle.
+- [ ] Les clés techniques sont masquées dans l'affichage du rapport si elles ne servent pas aux utilisateurs.
 
-## Checklist visuelle - Vue exécutive
+## Vue exécutive
 
-- [ ] Les cartes KPI affichent Nb Projets, Nb Phases, Nb Phases en alerte, Taux phases en alerte, Coût réel et Écart coût %.
-- [ ] Les filtres `Project_Type`, `Country`, `Region`, `Alert_Status` et `Phase` fonctionnent.
-- [ ] Le graphique des phases en alerte par région est lisible.
-- [ ] Le graphique des phases en alerte par type de projet est lisible.
-- [ ] La répartition des alertes par nature est lisible.
-- [ ] Les couleurs et titres sont cohérents avec le design final.
+- [ ] Les KPI affichent 104 projets, 102 projets en alerte, 348 phases en alerte et 66,92 %.
+- [ ] Le coût réel affiche `60,20 M$` ou une autre présentation en USD, jamais en euros.
+- [ ] Le segment de dates fonctionne.
+- [ ] Le graphique régional utilise un taux comparable et propose le volume en infobulle.
+- [ ] Le graphique par type est empilé à 100 % avec `En alerte` et `OK`.
+- [ ] La répartition par nature utilise un anneau ou un autre visuel distinct des barres.
+- [ ] Une carte mondiale permet l'analyse par pays.
+- [ ] Les infobulles présentent prévu, réel et écart.
+- [ ] L'encart stratégique sur `Phase D - Testing` est visible.
 
-## Checklist visuelle - Détail des alertes
+## Détail des alertes
 
 - [ ] Le tableau est filtré sur `Alert_Status = En alerte`.
-- [ ] Les colonnes attendues sont présentes : `Project_ID`, `Phase`, `Country`, `Region`, `Project_Type`, `Alert_Count`, `Alert_Status`, Écart coût %.
+- [ ] `Statut d'alerte` est correctement orthographié.
 - [ ] Le tri est décroissant sur `Alert_Count`.
-- [ ] La mise en forme conditionnelle sur `Alert_Count` est visible.
-- [ ] Les filtres de page permettent une analyse par pays, région, type de projet et phase.
+- [ ] La mise en forme conditionnelle fait ressortir les valeurs 1, 2 et 3.
+- [ ] Les écarts de coût, durée et livrables sont accessibles dans le tableau ou l'infobulle.
+- [ ] Les filtres par type, pays, région et phase fonctionnent.
 
-## Checklist visuelle - Documentation & Méthode
+## Planning Gantt
 
-- [ ] La page `Documentation & Méthode` est présente dans le rapport.
-- [ ] Elle présente le Product Strategy Canvas.
-- [ ] Elle rappelle les étapes de préparation et de mise à jour des données.
-- [ ] Elle décrit le modèle de données et les transformations Power Query.
-- [ ] Elle explique la règle d'alerte à 15 % et les KPI de contrôle.
+- [ ] Le visuel Gantt est présent et fonctionnel.
+- [ ] Les tâches utilisent `Gantt_Task`.
+- [ ] Le début utilise `Start_Date` et la durée `Planned_Duration`.
+- [ ] La couleur distingue `En alerte` et `OK`.
+- [ ] Les années sont lisibles sur l'axe temporel.
 
-## Valeurs de contrôle globales
+## Documentation du rapport
 
-Sans filtre actif :
+- [ ] Le Product Strategy Canvas est résumé.
+- [ ] La procédure de mise à jour est présente.
+- [ ] Une capture de la vue Modèle relationnelle est intégrée.
+- [ ] Les relations et cardinalités sont expliquées.
+- [ ] Le renommage `Actual_Deliverables` est expliqué.
+- [ ] La règle stricte de 15 % et les KPI de contrôle sont expliqués.
+
+## Valeurs de contrôle du fichier de mission
 
 | Indicateur | Valeur attendue |
 |---|---:|
-| Nb Projets | 104 |
-| Nb Phases | 520 |
-| Nb Phases en alerte | 348 |
-| Taux phases en alerte | 66,92 % |
-| Nb alertes coût | 214 |
-| Nb alertes durée | 159 |
-| Nb alertes livrables | 96 |
+| Projets | 104 |
+| Projets en alerte | 102 |
+| Phases | 520 |
+| Phases en alerte | 348 |
+| Taux de phases en alerte | 66,92 % |
+| Alertes coût | 214 |
+| Alertes durée | 159 |
+| Alertes livrables | 96 |
+| Occurrences d'alerte | 469 |
+| Coût prévu | 56 108 000 USD |
+| Coût réel | 60 200 800 USD |
+| Écart coût | 7,29 % |
 
-## Points à vérifier dans Power BI Desktop
+## Validation finale
 
-Ces contrôles doivent rester manuels, car ils nécessitent l'ouverture du fichier `.pbix` dans Power BI Desktop :
-
-- [ ] Présence de la page `Documentation & Méthode`.
-- [ ] Lisibilité des visuels sur les 3 pages finales.
-- [ ] Fonctionnement des filtres et segments.
-- [ ] Export PDF à jour.
-- [ ] Valeurs globales conformes sans filtre actif.
-
-## Derniers points avant remise
-
-- [x] Placer le `.pbix` final dans `livrables/02_powerbi/`.
-- [x] Ajouter les captures dans `livrables/04_exports/captures_dashboard/`.
-- [x] Ajouter le PDF exporté dans `livrables/04_exports/export_pdf/`.
-- [x] Vérifier que les fichiers binaires ajoutés manuellement ne remplacent pas la documentation texte.
+- [ ] Actualisation complète sans erreur.
+- [ ] Test des interactions entre visuels.
+- [ ] Test des filtres pour les trois niveaux de direction.
+- [ ] Vérification de la mise en page desktop.
+- [ ] Vérification de la mise en page mobile.
+- [ ] Export PDF relu page par page.
+- [ ] Documentation GitHub cohérente avec le PBIX livré.
