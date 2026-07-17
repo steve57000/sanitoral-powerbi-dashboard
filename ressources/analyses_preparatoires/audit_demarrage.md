@@ -1,5 +1,7 @@
 # Audit de demarrage - Projet Power BI Sanitoral
 
+> Note du 17/07/2026 : ce fichier conserve l'audit préparatoire initial. Le modèle relationnel retenu après mentorat et le plan d'application à jour sont documentés dans `livrables/03_documentation/modele_de_donnees.md` et `livrables/02_powerbi/plan_corrections_powerbi.md`.
+
 ## 1. Synthese executive
 
 Le projet consiste a construire un tableau de bord Power BI dynamique pour Sanitoral, une entreprise internationale de soins bucco-dentaires, afin de suivre l'avancement des projets IT et Marketing, identifier les retards et alerter les directeurs lorsqu'un ecart significatif apparait.
@@ -13,7 +15,7 @@ Les fichiers fournis permettent de realiser un projet solide et professionnel :
 - un besoin de mise a jour hebdomadaire avec nettoyage automatique dans Power Query ;
 - un livrable Power BI qui doit contenir a la fois les visualisations, le Product Strategy Canvas, la procedure de mise a jour et le modele de donnees.
 
-Orientation recommandee : construire un rapport Power BI en 4 pages principales, avec une page d'accueil executive, une page performance projets, une page geographique, une page diagnostic phases, puis une page documentation/methode. Le rapport doit fonctionner pour les trois niveaux de direction grace aux filtres, aux drill-through, aux infobulles et a une logique de niveau de lecture, plutot que par une page separee pour chaque role.
+Orientation initialement recommandee : construire un rapport Power BI en 5 pages, avec une page d'accueil executive, une page performance projets, une page geographique, une page diagnostic phases, puis une page documentation/methode. La réalisation finale consolide ces besoins en 4 pages afin d'éviter les doublons.
 
 ## 2. Attendus pedagogiques et livrables
 
@@ -127,73 +129,36 @@ Axe strategique fort pour la soutenance :
 
 ## 6. Modele de donnees recommande
 
-Modele en etoile recommande :
+Le modèle retenu après mentorat charge les sept tables nettoyées et utilise `Projects_Plans` comme table centrale.
 
-- table de faits principale : `Fact_ProjectPhasePerformance` ;
-- dimensions :
-  - `Dim_Project` ;
-  - `Dim_ProjectType` ;
-  - `Dim_Phase` ;
-  - `Dim_Country` ;
-  - `Dim_Region` ;
-  - `Dim_Date`.
+Relations :
 
-Relations recommandees :
+- `Project_Type` 1-* `Projects_Plans` par `Project_ID` ;
+- `Projects_Locations` 1-* `Projects_Plans` par `Project_ID` ;
+- `Country_Profiles` 1-* `Projects_Locations` par `Country` ;
+- `Projects_Plans` 1-1 `Actual_Costs` par `ProjectPhaseKey` ;
+- `Projects_Plans` 1-1 `Actual_Duration` par `ProjectPhaseKey` ;
+- `Projects_Plans` 1-1 `Actual_Deliverables` par `ProjectPhaseKey`.
 
-- `Fact_ProjectPhasePerformance[Project_ID]` vers `Dim_Project[Project_ID]` ;
-- `Fact_ProjectPhasePerformance[Phase]` vers `Dim_Phase[Phase]` ;
-- `Dim_Project[Country]` vers `Dim_Country[Country]` ;
-- `Dim_Country[Region]` vers `Dim_Region[Region]` ;
-- `Fact_ProjectPhasePerformance[Start Date]` vers `Dim_Date[Date]`.
-
-Approche alternative plus simple pour le projet :
-
-- conserver une table centrale deja mergee dans Power Query ;
-- garder quelques dimensions de filtrage : projet, pays, region, phase, date.
-
-Pour OpenClassrooms, le modele simple mais propre est souvent plus efficace : il faut pouvoir expliquer clairement les relations, les transformations et les mesures.
+La table fusionnée `Fact_ProjectPhasePerformance` n'est plus chargée après le remappage des visuels. Ce choix permet de montrer les relations réellement utilisées et de relier le prévu au réel au grain projet-phase.
 
 ## 7. Mesures DAX prioritaires
 
-Mesures de base :
+Les calculs définitifs utilisent `Projects_Plans` pour le prévu et les tables `Actual_*` pour le réel. Les écarts et alertes sont créés comme colonnes calculées dans `Projects_Plans` avec `RELATED()`, puis agrégés par des mesures simples.
+
+Mesures principales :
 
 ```DAX
-Nb Projets = DISTINCTCOUNT(Fact_ProjectPhasePerformance[Project_ID])
-Nb Phases = COUNTROWS(Fact_ProjectPhasePerformance)
-
-Cout Prevu = SUM(Fact_ProjectPhasePerformance[Planned_Cost])
-Cout Reel = SUM(Fact_ProjectPhasePerformance[Actual_Cost])
-Ecart Cout = [Cout Reel] - [Cout Prevu]
-Ecart Cout % = DIVIDE([Ecart Cout], [Cout Prevu])
-
-Duree Prevue = SUM(Fact_ProjectPhasePerformance[Planned_Duration])
-Duree Reelle = SUM(Fact_ProjectPhasePerformance[Actual_Duration])
-Ecart Duree = [Duree Reelle] - [Duree Prevue]
-Ecart Duree % = DIVIDE([Ecart Duree], [Duree Prevue])
-
-Livrables Prevus = SUM(Fact_ProjectPhasePerformance[Planned_Deliverables])
-Livrables Reels = SUM(Fact_ProjectPhasePerformance[Actual_Deliverables])
-Ecart Livrables = [Livrables Reels] - [Livrables Prevus]
-Ecart Livrables % = DIVIDE([Ecart Livrables], [Livrables Prevus])
+Nb Projets = DISTINCTCOUNT(Projects_Plans[Project_ID])
+Nb Phases = COUNTROWS(Projects_Plans)
+Cout Prevu = SUM(Projects_Plans[Planned_Cost])
+Cout Reel = SUM(Actual_Costs[Actual_Cost])
+Duree Reelle = SUM(Actual_Duration[Actual_Duration])
+Livrables Reels = SUM(Actual_Deliverables[Actual_Deliverables])
+Nb Alertes = SUM(Projects_Plans[Alert_Count])
 ```
 
-Mesures d'alerte :
-
-```DAX
-Alerte Cout =
-IF([Ecart Cout %] > 0.15, 1, 0)
-
-Alerte Duree =
-IF([Ecart Duree %] > 0.15, 1, 0)
-
-Alerte Livrables =
-IF([Ecart Livrables %] < -0.15, 1, 0)
-
-Nb Alertes =
-[Alerte Cout] + [Alerte Duree] + [Alerte Livrables]
-```
-
-Pour compter proprement les phases ou projets en alerte, il faudra privilegier des colonnes calculees d'alerte au niveau ligne dans Power Query ou DAX, puis des mesures `SUM` / `DISTINCTCOUNT` filtrees. Cela sera plus robuste que des mesures d'alerte calculees seulement au niveau agregat.
+Les formules complètes et les valeurs de contrôle sont centralisées dans `livrables/03_documentation/mesures_dax.md`.
 
 ## 8. Pages Power BI recommandees
 
@@ -201,63 +166,25 @@ Pour compter proprement les phases ou projets en alerte, il faudra privilegier d
 
 Objectif : permettre au directeur general de comprendre en 30 secondes l'etat du portefeuille.
 
-Visuels :
+Visuels : cartes KPI, barres régionales, colonnes empilées à 100 % par type, anneau par nature, carte mondiale et segments métier/date.
 
-- cartes KPI : projets, phases, phases en alerte, cout reel vs prevu, livrables manquants ;
-- jauges ou barres d'ecart pour couts, durees, livrables ;
-- tendance temporelle des alertes par date de debut ;
-- top 5 regions/pays a risque ;
-- slicers : type projet, region, pays, phase, date.
+### Page 2 - Detail des alertes
 
-### Page 2 - Performance par projet
+Objectif : identifier les phases responsables des écarts.
 
-Objectif : identifier les projets ou phases responsables des ecarts.
+Visuels : tableau trié par criticité, mise en forme conditionnelle, écarts sur les trois indicateurs et infobulle détaillée.
 
-Visuels :
+### Page 3 - Planning Gantt
 
-- matrice projet x indicateurs ;
-- bar chart des projets les plus en alerte ;
-- decomposition tree par type > region > pays > phase ;
-- drill-through vers fiche projet ;
-- infobulle detaillee avec couts, durees, livrables.
+Objectif : visualiser le calendrier des phases et leur statut d'alerte.
 
-### Page 3 - Carte mondiale
+Visuels : Gantt des tâches projet-phase, filtres métier et couleurs `En alerte` / `OK`.
 
-Objectif : repondre a l'attendu explicite de Sanitoral.
+### Page 4 - Documentation du rapport
 
-Visuels :
+Objectif : répondre au mail de Sophie.
 
-- carte du monde coloree par taux d'alerte ou retard moyen ;
-- table detail pays ;
-- segmentation par region ;
-- infobulle pays : nb projets, nb alertes, ecart cout %, ecart duree %, ecart livrables %.
-
-Point de vigilance : les noms de pays francais peuvent etre mal geocodes par Power BI. Une table de geolocalisation pourra etre ajoutee si necessaire.
-
-### Page 4 - Diagnostic phases
-
-Objectif : transformer le reporting en decision strategique.
-
-Visuels :
-
-- heatmap phase x type projet sur le nombre d'alertes ;
-- waterfall ou barres d'ecart cout par phase ;
-- comparaison IT vs Marketing ;
-- focus sur la phase D - Testing ;
-- recommandation strategique affichee dans un encart.
-
-### Page 5 - Documentation et mise a jour
-
-Objectif : repondre au mail de Sophie.
-
-Contenus :
-
-- Product Strategy Canvas resume ;
-- procedure de mise a jour hebdomadaire ;
-- liste des transformations Power Query ;
-- schema du modele de donnees ;
-- definitions des indicateurs ;
-- regle d'alerte a 15 %.
+Contenus : Product Strategy Canvas résumé, procédure hebdomadaire, transformations Power Query, capture du modèle relationnel, règle de 15 % et KPI de contrôle.
 
 ## 9. Product Strategy Canvas - structure recommandee
 
@@ -417,4 +344,3 @@ Pour maximiser la note et eviter de partir trop large :
 - GitHub : oui, pour versionner la demarche, les mesures, le theme et les exports ;
 - web/app : oui en bonus portfolio, pas comme dependance du projet ;
 - analyse strategique : focus IT et phase D - Testing, car les chiffres sont tres parlants.
-

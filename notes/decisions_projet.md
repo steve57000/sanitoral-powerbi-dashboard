@@ -1,114 +1,104 @@
-# Decisions projet
+# Décisions projet
 
-Ce document conserve les choix de conception importants pour pouvoir les expliquer pendant la soutenance.
+Ce document conserve les choix de conception importants et leur évolution.
 
 ## Organisation du repository
 
-Decision :
+Décision : séparer les fichiers de mission, les livrables, les ressources de travail et les notes.
 
-- placer les fichiers fournis par la mission dans `mission/` ;
-- placer les fichiers produits et rendus dans `livrables/` ;
-- placer les analyses internes, themes et maquettes dans `ressources/` ;
-- conserver les notes de suivi dans `notes/`.
+Raison : préserver les sources d'origine, faciliter l'audit et identifier clairement les fichiers remis au jury.
 
-Raison :
+## Outil et préparation
 
-- separer clairement les sources d'origine et le travail realise ;
-- faciliter la lecture du repository ;
-- rendre le projet plus professionnel et plus facile a auditer.
+Décisions :
 
-## Outil principal
+- utiliser Power BI Desktop ;
+- réaliser le nettoyage dans Power Query ;
+- ne pas modifier manuellement le fichier Excel source ;
+- documenter les transformations pour la mise à jour hebdomadaire.
 
-Decision :
+## Clé projet-phase
 
-- utiliser Power BI Desktop comme outil principal.
+Décision : créer `ProjectPhaseKey` dans les quatre tables au grain projet-phase avec :
 
-Raison :
+```powerquery
+Text.From([Project_ID]) & "|" & [Phase]
+```
 
-- c'est l'outil attendu par le projet ;
-- il permet Power Query, DAX, modele relationnel, filtres, cartes et interactions.
+La clé est typée en Texte. `Project_ID` seul et `Phase` seule ne sont pas uniques au grain de l'analyse.
 
-## Nettoyage des donnees
+## Révision du modèle après mentorat
 
-Decision :
+Décision initiale du 7 juillet 2026 : charger uniquement `Fact_ProjectPhasePerformance`.
 
-- realiser le nettoyage dans Power Query, sans modifier manuellement le fichier Excel source.
+Décision révisée du 17 juillet 2026 : utiliser un modèle relationnel visible avec `Projects_Plans` comme table centrale.
 
-Raison :
+Raisons :
 
-- le scenario demande une mise a jour hebdomadaire ;
-- le nettoyage doit etre reproductible ;
-- les etapes appliquees pourront etre documentees dans le rapport.
+- la mission demande une capture et une explication du modèle de données ;
+- les tables de coûts, durées et livrables doivent être reliées au bon grain projet-phase ;
+- la vue Modèle doit présenter les relations réellement utilisées par le rapport ;
+- conserver la table fusionnée et les sept tables chargerait deux modèles concurrents.
 
-## Cle projet-phase
+Relations retenues :
 
-Decision :
+- `Project_Type` 1-* `Projects_Plans` par `Project_ID` ;
+- `Projects_Locations` 1-* `Projects_Plans` par `Project_ID` ;
+- `Country_Profiles` 1-* `Projects_Locations` par `Country` ;
+- `Projects_Plans` 1-1 avec chaque table `Actual_*` par `ProjectPhaseKey`.
 
-- creer une cle unique `ProjectPhaseKey` a partir de `Project_ID` et `Phase`.
+Les relations directes entre `Project_Type` et les tables `Actual_*` sont supprimées.
 
-Raison :
+## Convention de nommage
 
-- une phase seule n'est pas unique ;
-- un projet seul possede plusieurs phases ;
-- les tables de couts, durees et livrables doivent etre reliees au niveau projet-phase.
+Décision : conserver le fichier source inchangé, mais utiliser des noms cohérents dans Power Query.
+
+- `Projects_plans` devient `Projects_Plans` ;
+- `Project type` devient `Project_Type` ;
+- `Actual_Delivrable` devient `Actual_Deliverables` ;
+- `Planned_Delivrable` devient `Planned_Deliverables`.
+
+`Deliverables` est l'orthographe anglaise correcte et correspond au dictionnaire.
 
 ## Structure du rapport
 
-Decision :
+Décision : quatre pages finales.
 
-- construire un rapport final en 2 pages principales : `Vue executive` et `Detail des alertes` ;
-- rendre ces pages utilisables par tous les roles grace aux filtres et interactions.
+1. `Vue exécutive` ;
+2. `Détail des alertes` ;
+3. `Planning Gantt` ;
+4. `Documentation du rapport`.
 
-Raison :
+Les cinq vues envisagées dans le PSC sont consolidées : la géographie est intégrée à la vue exécutive et le diagnostic à la page de détail.
 
-- le scenario demande un rapport accessible aux trois types de directeurs ;
-- il ne faut pas creer une page totalement separee par role si les filtres permettent une lecture adaptee ;
-- la premiere page donne une vision de pilotage globale ;
-- la seconde page permet d'analyser les phases en alerte ;
-- cette structure evite la dispersion et facilite la soutenance.
+## Filtres plutôt qu'une page par rôle
 
-## Modele final Power BI
+Décision : utiliser des segments par type, pays, région, phase, statut et période.
 
-Decision :
+Raison : le même rapport répond aux directions générale, régionales et pays sans multiplier les pages et la maintenance.
 
-- conserver un modele final a une seule table chargee : `Fact_ProjectPhasePerformance`.
+## Variété des visuels
 
-Raison :
+Décisions :
 
-- les jointures sont deja integrees dans Power Query ;
-- le modele est plus simple a controler et a expliquer ;
-- les mesures DAX restent directes et lisibles.
+- barres par région avec taux d'alerte ;
+- colonnes empilées à 100 % par type de projet ;
+- anneau par nature d'alerte ;
+- carte mondiale par pays ;
+- tableau détaillé avec mise en forme conditionnelle ;
+- Gantt pour la lecture temporelle ;
+- infobulle détaillée prévu/réel/écart.
 
-## Filtres plutot qu'une page par role
+Raison : chaque visuel répond à une question métier distincte et la carte mondiale est explicitement demandée par la note de cadrage.
 
-Decision :
+## Devise
 
-- utiliser les filtres `Project_Type`, `Country`, `Region`, `Alert_Status` et `Phase` plutot que de creer une page separee par role.
+Décision : afficher les coûts en USD.
 
-Raison :
+Raison : le dictionnaire définit `Planned_Cost` et `Actual_Cost` en dollars. Aucun symbole euro ne doit apparaître sans conversion explicite.
 
-- un meme rapport reste utilisable par la direction generale, les directions regionales et les directions pays ;
-- les utilisateurs peuvent adapter la lecture a leur perimetre sans dupliquer les visuels.
+## Axe stratégique
 
-## Design du dashboard
+Décision : mettre en avant `Phase D - Testing`, dont les 52 phases sont en alerte.
 
-Decision :
-
-- adopter un design clair avec cartes KPI, graphiques de synthese et tableau detaille.
-
-Raison :
-
-- les cartes KPI donnent les indicateurs prioritaires ;
-- les graphiques montrent la repartition des alertes ;
-- le tableau detaille permet d'identifier les phases a traiter.
-
-## Mise en forme conditionnelle
-
-Decision :
-
-- appliquer une mise en forme conditionnelle sur `Alert_Count` dans la page `Detail des alertes`.
-
-Raison :
-
-- les lignes les plus critiques sont immediatement visibles ;
-- le tri decroissant et la couleur facilitent la priorisation des actions.
+Recommandation : renforcer les estimations, les contrôles qualité, les critères d'entrée et de sortie et les points de contrôle intermédiaires de la phase de test.
